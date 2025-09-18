@@ -11,6 +11,18 @@ const employeeFilter = document.getElementById('employee-filter');
 const shiftFilter = document.getElementById('shift-filter');
 const dateFilter = document.getElementById('date-filter');
 
+// Utility to get array of 7 dates from TODAY-3 to TODAY+3
+function get7DayRange() {
+    const today = new Date();
+    const dates = [];
+    for (let i = -3; i <= 3; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        dates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD format
+    }
+    return dates;
+}
+
 // Load data from Google Apps Script
 async function loadData() {
     try {
@@ -83,15 +95,14 @@ function populateFilters() {
         shiftFilter.appendChild(option);
     });
     
-    // Get unique dates
-    const dates = [...new Set(allData.map(item => item["Ngày đi làm"]))].sort();
-    
-    // Add date options
-    dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
-    dates.forEach(date => {
+    // Use only 7 days from TODAY-3 to TODAY+3 for date filter
+    const weekDates = get7DayRange();
+
+    dateFilter.innerHTML = '';
+    weekDates.forEach(date => {
         const option = document.createElement('option');
         option.value = date;
-        option.textContent = date;
+        option.textContent = formatDateWithWeekday(date);
         dateFilter.appendChild(option);
     });
 }
@@ -105,7 +116,7 @@ function filterData() {
     filteredData = allData.filter(item => {
         const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
         const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
-        const dateMatch = selectedDate === 'all' || item["Ngày đi làm"] === selectedDate;
+        const dateMatch = selectedDate === '' || item["Ngày đi làm"] === selectedDate;
         return employeeMatch && shiftMatch && dateMatch;
     });
     
@@ -119,8 +130,8 @@ function renderGrid() {
         return;
     }
     
-    // Get unique dates and employees
-    const dates = [...new Set(filteredData.map(item => item["Ngày đi làm"]))].sort();
+    // Use only 7 days for grid columns
+    const dates = get7DayRange();
     const employees = [...new Set(filteredData.map(item => item["Tên nhân viên"]))].sort();
     
     // Create grid structure
