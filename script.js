@@ -204,15 +204,6 @@ function renderGrid() {
             gridContainer.appendChild(scheduleCell);
         });
     });
-    
-    // Populate date filter (optional, since already set in populateFilters)
-    // dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
-    // dates.forEach(date => {
-    //     const option = document.createElement('option');
-    //     option.value = date;
-    //     option.textContent = formatDateWithWeekday(date);
-    //     dateFilter.appendChild(option);
-    // });
 }
 
 // Format date for display
