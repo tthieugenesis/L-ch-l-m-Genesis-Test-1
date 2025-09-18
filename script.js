@@ -83,8 +83,8 @@ filteredData = allData.filter(item => {
     const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
     const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
     return employeeMatch && shiftMatch;
-});
-    };
+};
+    });
     
     renderGrid();
 }
