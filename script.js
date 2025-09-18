@@ -11,16 +11,38 @@ const employeeFilter = document.getElementById('employee-filter');
 const shiftFilter = document.getElementById('shift-filter');
 const dateFilter = document.getElementById('date-filter');
 
-// Utility to get array of 7 dates from TODAY-3 to TODAY+3
-function get7DayRange() {
+// Utility to get current week dates (Mon-Sun), plus last Sunday and next Monday
+function getSpecialWeekRange() {
     const today = new Date();
-    const dates = [];
-    for (let i = -3; i <= 3; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        dates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD format
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    // Get Monday of this week
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+    // Get Sunday of this week
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    // Last Sunday
+    const lastSunday = new Date(sunday);
+    lastSunday.setDate(sunday.getDate() - 7);
+
+    // Next Monday
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+
+    // Build current week dates (Monday to Sunday)
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        weekDates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD format
     }
-    return dates;
+
+    // Add last Sunday and next Monday
+    weekDates.unshift(lastSunday.toISOString().split('T')[0]);
+    weekDates.push(nextMonday.toISOString().split('T')[0]);
+
+    return weekDates;
 }
 
 // Load data from Google Apps Script
@@ -29,9 +51,18 @@ async function loadData() {
         gridContainer.innerHTML = '<p style="text-align: center;">Đang tải dữ liệu...</p>';
         
         const today = new Date();
-        const startDate = new Date(today.getTime() - (3 * 24 * 60 * 60 * 1000));
-        const endDate = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-        
+        const dayOfWeek = today.getDay();
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+        const lastSunday = new Date(monday);
+        lastSunday.setDate(monday.getDate() - 1);
+        const nextMonday = new Date(monday);
+        nextMonday.setDate(monday.getDate() + 7);
+
+        // Get startDate as last Sunday and endDate as next Monday
+        const startDate = lastSunday;
+        const endDate = nextMonday;
+
         const response = await fetch(SCRIPT_URL, {
             redirect: "follow",
             method: "POST",
@@ -95,11 +126,11 @@ function populateFilters() {
         shiftFilter.appendChild(option);
     });
     
-    // Use only 7 days from TODAY-3 to TODAY+3 for date filter
-    const weekDates = get7DayRange();
+    // Use only current week + last Sunday + next Monday for date filter
+    const specialDates = getSpecialWeekRange();
 
     dateFilter.innerHTML = '';
-    weekDates.forEach(date => {
+    specialDates.forEach(date => {
         const option = document.createElement('option');
         option.value = date;
         option.textContent = formatDateWithWeekday(date);
@@ -130,8 +161,8 @@ function renderGrid() {
         return;
     }
     
-    // Use only 7 days for grid columns
-    const dates = get7DayRange();
+    // Use only current week + last Sunday + next Monday for grid columns
+    const dates = getSpecialWeekRange();
     const employees = [...new Set(filteredData.map(item => item["Tên nhân viên"]))].sort();
     
     // Create grid structure
