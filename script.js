@@ -15,9 +15,11 @@ const dateFilter = document.getElementById('date-filter');
 function getSpecialWeekRange() {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
     // Get Monday of this week
     const monday = new Date(today);
     monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+
     // Get Sunday of this week
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
@@ -54,8 +56,11 @@ async function loadData() {
         const dayOfWeek = today.getDay();
         const monday = new Date(today);
         monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+
+        // Last Sunday is before this Monday
         const lastSunday = new Date(monday);
         lastSunday.setDate(monday.getDate() - 1);
+        // Next Monday is after this week's Sunday
         const nextMonday = new Date(monday);
         nextMonday.setDate(monday.getDate() + 7);
 
@@ -177,20 +182,17 @@ function filterData() {
 
 // Render the schedule grid
 function renderGrid() {
+    // Always use 9 special days for the table
+    const dates = getSpecialWeekRange();
+    const employees = [...new Set(filteredData.map(item => item["Tên nhân viên"]))].sort();
+
     if (filteredData.length === 0) {
         gridContainer.innerHTML = '<p style="text-align: center; color: #666;">Không có dữ liệu lịch làm việc.</p>';
         return;
     }
     
-    // Always use 9 special days for the table
-    const dates = getSpecialWeekRange();
-    const employees = [...new Set(filteredData.map(item => item["Tên nhân viên"]))].sort();
-    
     // Create grid structure
-    const gridColumns = dates.length + 1; // +1 for employee column
     gridContainer.style.gridTemplateColumns = `200px repeat(${dates.length}, 120px)`;
-    
-    // Clear existing content
     gridContainer.innerHTML = '';
     
     // Create header row
@@ -241,13 +243,12 @@ function renderGrid() {
                     scheduleCell.innerHTML = formattedSchedules.join('<br><br>');
                     
                     // Apply styling based on shifts
-                    const shifts = schedules.map(s => s["Ca đăng ký"].toLowerCase());
+                    const shifts = schedules.map(s => (s["Ca đăng ký"] || '').toLowerCase());
                     
                     // Check for mixed shifts
                     if (shifts.length > 1) {
                         scheduleCell.className += ' shift-mixed';
-                    } else {
-                        // Single shift styling
+                    } else if (shifts.length === 1) {
                         const shiftLower = shifts[0];
                         if (shiftLower.includes('sáng') || shiftLower.includes('sang')) {
                             scheduleCell.className += ' shift-sang';
