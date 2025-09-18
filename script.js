@@ -126,16 +126,26 @@ function populateFilters() {
         shiftFilter.appendChild(option);
     });
     
-    // Use only current week + last Sunday + next Monday for date filter
+    // Special 9-day range for the date filter
     const specialDates = getSpecialWeekRange();
 
     dateFilter.innerHTML = '';
+    // Add "9 Ngày Vàng" as the first option
+    const allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.textContent = '9 Ngày Vàng';
+    dateFilter.appendChild(allOption);
+
+    // Add each of the special dates
     specialDates.forEach(date => {
         const option = document.createElement('option');
         option.value = date;
         option.textContent = formatDateWithWeekday(date);
         dateFilter.appendChild(option);
     });
+
+    // Set default value to 'all' (show all 9 days) on load
+    dateFilter.value = 'all';
 }
 
 // Filter data based on selected filters
@@ -144,12 +154,23 @@ function filterData() {
     const selectedShift = shiftFilter.value;
     const selectedDate = dateFilter.value;
 
-    filteredData = allData.filter(item => {
-        const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
-        const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
-        const dateMatch = selectedDate === '' || item["Ngày đi làm"] === selectedDate;
-        return employeeMatch && shiftMatch && dateMatch;
-    });
+    // If "9 Ngày Vàng" is selected, show all special dates
+    if (selectedDate === 'all') {
+        const specialDates = getSpecialWeekRange();
+        filteredData = allData.filter(item => {
+            const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
+            const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
+            const dateMatch = specialDates.includes(item["Ngày đi làm"]);
+            return employeeMatch && shiftMatch && dateMatch;
+        });
+    } else {
+        filteredData = allData.filter(item => {
+            const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
+            const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
+            const dateMatch = item["Ngày đi làm"] === selectedDate;
+            return employeeMatch && shiftMatch && dateMatch;
+        });
+    }
     
     renderGrid();
 }
@@ -161,7 +182,7 @@ function renderGrid() {
         return;
     }
     
-    // Use only current week + last Sunday + next Monday for grid columns
+    // Always use 9 special days for the table
     const dates = getSpecialWeekRange();
     const employees = [...new Set(filteredData.map(item => item["Tên nhân viên"]))].sort();
     
