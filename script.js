@@ -82,6 +82,16 @@ function populateFilters() {
         option.textContent = shift;
         shiftFilter.appendChild(option);
     });
+      // Get unique date
+    const date = [...new Set(allData.map(item => item["Ngày đi làm"]))].sort();
+    
+    // Add shift options
+    dates.forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        dateFilter.appendChild(option);
+    });
 }
 // Filter data based on selected filters
 function filterData() {
