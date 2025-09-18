@@ -83,7 +83,6 @@ function populateFilters() {
         shiftFilter.appendChild(option);
     });
 }
-
 // Filter data based on selected filters
 function filterData() {
     const selectedEmployee = employeeFilter.value;
