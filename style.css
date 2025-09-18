@@ -1,0 +1,92 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    color: #1a3b5d;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+.controls select {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: white;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-gap: 1px;
+    background-color: #e0e0e0;
+    border: 1px solid #e0e0e0;
+    overflow-x: auto;
+}
+
+.header-cell {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    white-space: pre-line;
+    line-height: 1.2;
+}
+
+/* Shift Colors */
+.shift-sang {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    color: #e65100;
+}
+.shift-chieu {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    color: #0d47a1;
+}
+.shift-toi {
+    background-color: #f3e5f5;
+    border-left: 4px solid #9c27b0;
+    color: #4a148c;
+}
+.shift-mixed {
+    background-color: #f0f8ff;
+    border-left: 4px solid #4caf50;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+/* Enhanced grid cell styling for formatted content */
+.grid-cell {
+    background-color: #fff;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 13px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.4;
+}

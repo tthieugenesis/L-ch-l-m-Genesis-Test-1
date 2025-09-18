@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Lịch Làm Việc Genesis</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>🗓️ Dashboard Lịch Làm Việc</h1>
+        <div class="controls">
+            <select id="employee-filter">
+                <option value="all">Tất cả nhân viên</option>
+            </select>
+            <select id="shift-filter">
+                <option value="all">Tất cả các ca</option>
+                <option value="Sáng">Sáng</option>
+                <option value="Chiều">Chiều</option>
+                <option value="Tối">Tối</option>
+            </select>
+        </div>
+        <div id="schedule-grid" class="schedule-grid">
+            <!-- Lịch làm việc sẽ được JavaScript tạo ra ở đây -->
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
