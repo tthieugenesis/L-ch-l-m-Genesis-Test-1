@@ -7,41 +7,51 @@ let filteredData = [];
 
 // DOM elements
 const gridContainer = document.getElementById('schedule-grid');
-// Get unique employees with schedules on the current date
-const today = new Date();
-const currentDate = formatDate(today.toISOString());
-const employees = [...new Set(allData.filter(item => item["Ngày đi làm"] === currentDate).map(item => item["Tên nhân viên"]))].sort();
+const employeeFilter = document.getElementById('employee-filter');
 const shiftFilter = document.getElementById('shift-filter');
 const dateFilter = document.getElementById('date-filter');
 
 // Load data from Google Apps Script
 async function loadData() {
     try {
+        gridContainer.innerHTML = '<p style="text-align: center;">Đang tải dữ liệu...</p>';
+        
         const today = new Date();
-        const startDate = new Date(today.getTime() - (3 * 24 * 60 * 60 * 1000)); // TODAY-3
-        const endDate = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000)); // TODAY+3
+        const startDate = new Date(today.getTime() - (3 * 24 * 60 * 60 * 1000));
+        const endDate = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
         
         const response = await fetch(SCRIPT_URL, {
             redirect: "follow",
             method: "POST",
-            body: JSON.stringify({ startDate: startDate.toISOString(), endDate: endDate.toISOString() }),
+            body: JSON.stringify({ 
+                startDate: startDate.toISOString(), 
+                endDate: endDate.toISOString() 
+            }),
             headers: {
                 "Content-Type": "text/plain;charset=utf-8",
             },
         });
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        allData = await response.json();
 
-        // Dữ liệu đã ở định dạng JSON, không cần parse CSV nữa
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+            throw new Error('Data is not in expected format');
+        }
+
+        allData = data;
         filteredData = [...allData];
         populateFilters();
         renderGrid();
     } catch (error) {
-        console.error('There has been a problem with your fetch operation:', error);
-        // Hiển thị lỗi cho người dùng nếu không tải được dữ liệu
-        gridContainer.innerHTML = '<p style="color: red; text-align: center;">Không thể tải dữ liệu lịch làm việc. Vui lòng thử lại sau.</p>';
+        console.error('Error loading data:', error);
+        gridContainer.innerHTML = `
+            <p style="color: red; text-align: center;">
+                Không thể tải dữ liệu lịch làm việc. ${error.message}<br>
+                <button onclick="loadData()" style="margin-top: 10px;">Thử lại</button>
+            </p>`;
     }
 }
 
@@ -77,13 +87,16 @@ function populateFilters() {
 // Filter data based on selected filters
 function filterData() {
     const selectedEmployee = employeeFilter.value;
-const selectedShift = shiftFilter.value;
+    const selectedShift = shiftFilter.value;
+    const selectedDate = dateFilter.value;
 
-filteredData = allData.filter(item => {
-    const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
-    const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
-    return employeeMatch && shiftMatch;
-};  
+    filteredData = allData.filter(item => {
+        const employeeMatch = selectedEmployee === 'all' || item["Tên nhân viên"] === selectedEmployee;
+        const shiftMatch = selectedShift === 'all' || item["Ca đăng ký"] === selectedShift;
+        const dateMatch = selectedDate === 'all' || item["Ngày đi làm"] === selectedDate;
+        return employeeMatch && shiftMatch && dateMatch;
+    });
+    
     renderGrid();
 }
 
@@ -152,22 +165,21 @@ function renderGrid() {
                 if (formattedSchedules.length > 0) {
                     scheduleCell.innerHTML = formattedSchedules.join('<br><br>');
                     
-                    // Apply styling based on the first shift
-                    const firstShift = schedules[0]["Ca đăng ký"];
-                    if (firstShift) {
-                        // Map shift names to CSS classes
-                        let shiftClass = '';
-                        const shiftLower = firstShift.toLowerCase();
+                    // Apply styling based on shifts
+                    const shifts = schedules.map(s => s["Ca đăng ký"].toLowerCase());
+                    
+                    // Check for mixed shifts
+                    if (shifts.length > 1) {
+                        scheduleCell.className += ' shift-mixed';
+                    } else {
+                        // Single shift styling
+                        const shiftLower = shifts[0];
                         if (shiftLower.includes('sáng') || shiftLower.includes('sang')) {
-                            shiftClass = 'shift-sang';
+                            scheduleCell.className += ' shift-sang';
                         } else if (shiftLower.includes('chiều') || shiftLower.includes('chieu')) {
-                            shiftClass = 'shift-chieu';
+                            scheduleCell.className += ' shift-chieu';
                         } else if (shiftLower.includes('tối') || shiftLower.includes('toi')) {
-                            shiftClass = 'shift-toi';
-                        }
-                        
-                        if (shiftClass) {
-                            scheduleCell.className += ` ${shiftClass}`;
+                            scheduleCell.className += ' shift-toi';
                         }
                     }
                 } else {
@@ -194,12 +206,15 @@ function renderGrid() {
 // Format date for display
 function formatDate(dateString) {
     try {
+        if (!dateString) return '';
         const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
         return date.toLocaleDateString('vi-VN', {
             day: '2-digit',
             month: '2-digit'
         });
     } catch (error) {
+        console.error('Error formatting date:', error);
         return dateString;
     }
 }
@@ -207,7 +222,9 @@ function formatDate(dateString) {
 // Format date with Vietnamese weekday
 function formatDateWithWeekday(dateString) {
     try {
+        if (!dateString) return '';
         const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
         const dayMonth = date.toLocaleDateString('vi-VN', {
             day: '2-digit',
             month: '2-digit'
@@ -216,8 +233,9 @@ function formatDateWithWeekday(dateString) {
         const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
         const weekday = weekdays[date.getDay()];
         
-        return `${dayMonth}\n${weekday}`;
+        return `${weekday}\n${dayMonth}`;
     } catch (error) {
+        console.error('Error formatting date with weekday:', error);
         return dateString;
     }
 }
@@ -229,5 +247,10 @@ dateFilter.addEventListener('change', filterData);
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Kiểm tra các elements cần thiết
+    if (!gridContainer || !employeeFilter || !shiftFilter || !dateFilter) {
+        console.error('Required DOM elements not found');
+        return;
+    }
     loadData();
 });
