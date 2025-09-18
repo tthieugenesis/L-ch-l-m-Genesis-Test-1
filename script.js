@@ -82,10 +82,12 @@ function populateFilters() {
         option.textContent = shift;
         shiftFilter.appendChild(option);
     });
-      // Get unique date
-    const date = [...new Set(allData.map(item => item["Ngày đi làm"]))].sort();
     
-    // Add shift options
+    // Get unique dates
+    const dates = [...new Set(allData.map(item => item["Ngày đi làm"]))].sort();
+    
+    // Add date options
+    dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
     dates.forEach(date => {
         const option = document.createElement('option');
         option.value = date;
@@ -93,6 +95,7 @@ function populateFilters() {
         dateFilter.appendChild(option);
     });
 }
+
 // Filter data based on selected filters
 function filterData() {
     const selectedEmployee = employeeFilter.value;
@@ -202,14 +205,14 @@ function renderGrid() {
         });
     });
     
-    // Populate date filter
-    dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
-    dates.forEach(date => {
-        const option = document.createElement('option');
-        option.value = date;
-        option.textContent = formatDateWithWeekday(date);
-        dateFilter.appendChild(option);
-    });
+    // Populate date filter (optional, since already set in populateFilters)
+    // dateFilter.innerHTML = '<option value="all">Tất cả ngày</option>';
+    // dates.forEach(date => {
+    //     const option = document.createElement('option');
+    //     option.value = date;
+    //     option.textContent = formatDateWithWeekday(date);
+    //     dateFilter.appendChild(option);
+    // });
 }
 
 // Format date for display
