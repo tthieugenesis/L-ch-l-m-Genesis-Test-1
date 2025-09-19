@@ -1,5 +1,5 @@
 // DÁN URL BẠN VỪA COPY TỪ APPS SCRIPT VÀO ĐÂY
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRyVxBVrgn27vQQTVtOswR7AttTzIIxEBa1VY10qh3kCLA0cKldjL2rkqe-cAPwnlhYQ/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlOCcTA0OCBVYYzTkt1H43htMigj0E5h8ytSVWvqyprPh_XJLUyzY5cLVWEGB6wuTuIg/exec'; 
 
 // Global variables
 let allData = [];
